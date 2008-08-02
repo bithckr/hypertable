@@ -57,6 +57,7 @@ namespace Hypertable {
     ~Master();
 
     void create_table(ResponseCallback *cb, const char *tablename, const char *schemastr);
+    void rename_table(ResponseCallback *cb, const char *old_tablename, const char *new_tablename);
     void get_schema(ResponseCallbackGetSchema *cb, const char *tablename);
     void register_server(ResponseCallback *cb, const char *location, struct sockaddr_in &addr);
     void report_split(ResponseCallback *cb, TableIdentifier &table, RangeSpec &range, const char *transfer_log_dir, uint64_t soft_limit);
@@ -70,6 +71,7 @@ namespace Hypertable {
 
   protected:
     int create_table(const char *tablename, const char *schemastr, String &errmsg);
+    int rename_table(const char *old_tablename, const char *new_tablename, String &errmsg);
 
   private:
     bool initialize();

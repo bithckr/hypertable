@@ -156,6 +156,12 @@ void HqlCommandInterpreter::execute_line(const String &line) {
       schema_str = m_client->get_schema(state.table_name);
       cout << schema_str << endl;
     }
+    else if (state.command == COMMAND_RENAME_TABLE) {
+        for(size_t i=0; i<state.rename_tables.size(); i++) {
+            m_client->rename_table(state.rename_tables[i].existing_table_name,
+                                   state.rename_tables[i].new_table_name);
+        }
+    }
     else if (state.command == COMMAND_SELECT) {
       TablePtr table_ptr;
       TableScannerPtr scanner_ptr;

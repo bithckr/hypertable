@@ -30,6 +30,7 @@
 
 #include "ConnectionHandler.h"
 #include "RequestHandlerCreateTable.h"
+#include "RequestHandlerRenameTable.h"
 #include "RequestHandlerDropTable.h"
 #include "RequestHandlerGetSchema.h"
 #include "RequestHandlerStatus.h"
@@ -56,7 +57,7 @@ void ConnectionHandler::handle(EventPtr &event) {
 
     try {
       command = decode_i16(&msg, &remain);
-
+      
       // sanity check command code
       if (command < 0 || command >= MasterProtocol::COMMAND_MAX)
         HT_THROWF(PROTOCOL_ERROR, "Invalid command (%d)", command);
@@ -64,6 +65,9 @@ void ConnectionHandler::handle(EventPtr &event) {
       switch (command) {
       case MasterProtocol::COMMAND_CREATE_TABLE:
         hp = new RequestHandlerCreateTable(m_comm, m_master_ptr.get(), event);
+        break;
+      case MasterProtocol::COMMAND_RENAME_TABLE:
+        hp = new RequestHandlerRenameTable(m_comm, m_master_ptr.get(), event);
         break;
       case MasterProtocol::COMMAND_DROP_TABLE:
         hp = new RequestHandlerDropTable(m_comm, m_master_ptr.get(), event);

@@ -42,11 +42,14 @@ namespace Hypertable {
     static const short COMMAND_REPORT_SPLIT    = 4;
     static const short COMMAND_DROP_TABLE      = 5;
     static const short COMMAND_SHUTDOWN        = 6;
-    static const short COMMAND_MAX             = 7;
+    static const short COMMAND_RENAME_TABLE    = 7;
+    static const short COMMAND_MAX             = 8;
 
     static const char *m_command_strings[];
 
     static CommBuf *create_create_table_request(const char *tablename, const char *schemastr);
+    
+    static CommBuf *create_rename_table_request(const char *old_tablename, const char *new_tablename);
 
     static CommBuf *create_get_schema_request(const char *tablename);
 

@@ -58,6 +58,7 @@ namespace Hypertable {
       COMMAND_CREATE_TABLE,
       COMMAND_DESCRIBE_TABLE,
       COMMAND_SHOW_CREATE_TABLE,
+      COMMAND_RENAME_TABLE,
       COMMAND_SELECT,
       COMMAND_LOAD_DATA,
       COMMAND_INSERT,
@@ -93,6 +94,17 @@ namespace Hypertable {
       String value;
     };
 
+    class rename_table_record {
+    public:
+        rename_table_record() {}
+        void clear() {
+            existing_table_name = "";
+            new_table_name = "";
+        }
+        String existing_table_name;
+        String new_table_name;
+    };
+    
     class hql_interpreter_scan_state {
     public:
       hql_interpreter_scan_state()
@@ -127,6 +139,8 @@ namespace Hypertable {
       int command;
       String table_name;
       String clone_table_name;
+      rename_table_record current_table_value;
+      std::vector<rename_table_record> rename_tables;
       String str;
       String output_file;
       String input_file;
@@ -183,6 +197,35 @@ namespace Hypertable {
         display_string("set_clone_table_name");
         state.clone_table_name = String(str, end-str);
         trim_if(state.clone_table_name, is_any_of("'\""));
+      }
+      hql_interpreter_state &state;
+    };
+       
+    struct set_existing_table {
+      set_existing_table(hql_interpreter_state &state_) : state(state_) { }
+      void operator()(char const *str, char const *end) const {
+        display_string("set_existing_table");
+        state.current_table_value.existing_table_name = String(str, end-str);
+        trim_if(state.current_table_value.existing_table_name, is_any_of("'\""));
+      }
+      hql_interpreter_state &state;
+    };
+    struct set_new_table {
+      set_new_table(hql_interpreter_state &state_) : state(state_) { }
+      void operator()(char const *str, char const *end) const {
+        display_string("set_new_table");
+        state.current_table_value.new_table_name = String(str, end-str);
+        trim_if(state.current_table_value.new_table_name, is_any_of("'\""));
+      }
+      hql_interpreter_state &state;
+    };
+    
+    struct add_table_value {
+      add_table_value(hql_interpreter_state &state_) : state(state_) { }
+      void operator()(char const *str, char const *end) const {
+        display_string("add_table_value");
+        state.rename_tables.push_back(state.current_table_value);
+        state.current_table_value.clear();
       }
       hql_interpreter_state &state;
     };
@@ -962,6 +1005,8 @@ namespace Hypertable {
           Token NO           = as_lower_d["no"];
           Token OFF          = as_lower_d["off"];
           Token LIKE         = as_lower_d["like"];
+          Token RENAME       = as_lower_d["rename"];
+          Token TO           = as_lower_d["to"];
 
           /**
            * Start grammar definition
@@ -997,6 +1042,8 @@ namespace Hypertable {
                 COMMAND_CREATE_TABLE)]
             | describe_table_statement[set_command(self.state,
                 COMMAND_DESCRIBE_TABLE)]
+            | rename_table_statement[set_command(self.state, 
+                  COMMAND_RENAME_TABLE)]
             | load_data_statement[set_command(self.state, COMMAND_LOAD_DATA)]
             | show_statement[set_command(self.state, COMMAND_SHOW_CREATE_TABLE)]
             | help_statement[set_help(self.state)]
@@ -1116,7 +1163,21 @@ namespace Hypertable {
               >> string_literal[set_insert_columnkey(self.state)] >> COMMA
               >> string_literal[set_insert_value (self.state)] >> RPAREN
             ;
-
+          
+          rename_table_statement
+            = RENAME >> TABLE >> rename_value_list
+            ;
+          
+          rename_value_list
+            = rename_value[add_table_value(self.state)] >> *(COMMA
+              >> rename_value[add_table_value(self.state)])
+            ;
+          
+          rename_value
+            = user_identifier[set_existing_table(self.state)] >> TO
+              >> user_identifier[set_new_table(self.state)]
+            ;
+   
           show_statement
             = (SHOW >> CREATE >> TABLE >> user_identifier[
                 set_table_name(self.state)])
@@ -1370,6 +1431,9 @@ namespace Hypertable {
           BOOST_SPIRIT_DEBUG_RULE(replay_start_statement);
           BOOST_SPIRIT_DEBUG_RULE(replay_log_statement);
           BOOST_SPIRIT_DEBUG_RULE(replay_commit_statement);
+          BOOST_SPIRIT_DEBUG_RULE(rename_table_statement);
+          BOOST_SPIRIT_DEBUG_RULE(rename_value_list);
+          BOOST_SPIRIT_DEBUG_RULE(rename_value);
         }
 #endif
 
@@ -1393,7 +1457,8 @@ namespace Hypertable {
           drop_table_statement, load_range_statement, range_spec,
           update_statement, create_scanner_statement, destroy_scanner_statement,
           fetch_scanblock_statement, shutdown_statement, drop_range_statement,
-          replay_start_statement, replay_log_statement, replay_commit_statement;
+          replay_start_statement, replay_log_statement, replay_commit_statement,
+          rename_table_statement, rename_value_list, rename_value;
         };
 
       hql_interpreter_state &state;

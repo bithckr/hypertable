@@ -67,7 +67,15 @@ namespace Hypertable {
      * @param schema schema definition for the table
      */
     void create_table(const String &name, const String &schema);
-
+    
+    /**
+     * Renames a table
+     *
+     * @param old_tablename name of the existing table
+     * @param new_tablename name of the new table
+     */
+    void rename_table(const String &old_tablename, const String &new_tablename);
+    
     /**
      * Opens a table
      *

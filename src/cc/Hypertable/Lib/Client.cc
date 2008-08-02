@@ -67,6 +67,14 @@ void Client::create_table(const String &name, const String &schema) {
     HT_THROW(error, "");
 }
 
+/**
+ *
+ */
+void Client::rename_table(const String &old_tablename, const String &new_tablename) {
+    int error;
+    if ((error = m_master_client_ptr->rename_table(old_tablename.c_str(), new_tablename.c_str())) != Error::OK)
+        HT_THROW(error, "");
+}
 
 /**
  *

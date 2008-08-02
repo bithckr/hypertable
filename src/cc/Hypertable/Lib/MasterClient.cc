@@ -100,6 +100,27 @@ int MasterClient::create_table(const char *tablename, const char *schemastr) {
   return error;
 }
 
+int MasterClient::rename_table(const char *old_tablename, const char *new_tablename,
+                               DispatchHandler *handler) {
+    CommBufPtr cbp(MasterProtocol::create_rename_table_request(old_tablename, new_tablename));
+    return send_message(cbp, handler);
+}
+
+int MasterClient::rename_table(const char *old_tablename, const char *new_tablename) {
+  DispatchHandlerSynchronizer sync_handler;
+  EventPtr event_ptr;
+  CommBufPtr cbp(MasterProtocol::create_rename_table_request(old_tablename, new_tablename));
+  int error = send_message(cbp, &sync_handler);
+  if (error == Error::OK) {
+    if (!sync_handler.wait_for_reply(event_ptr)) {
+      if (m_verbose)
+        HT_ERRORF("Master 'rename table' error, %s -> %s : %s", old_tablename, new_tablename, 
+                  MasterProtocol::string_format_message(event_ptr).c_str());
+      error = (int)MasterProtocol::response_code(event_ptr);
+    }
+  }
+  return error;
+}
 
 int MasterClient::get_schema(const char *tablename, DispatchHandler *handler) {
   CommBufPtr cbp(MasterProtocol::create_get_schema_request(tablename));

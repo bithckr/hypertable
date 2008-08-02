@@ -60,6 +60,9 @@ namespace Hypertable {
     int create_table(const char *tablename, const char *schemastr, DispatchHandler *handler);
     int create_table(const char *tablename, const char *schemastr);
 
+    int rename_table(const char *old_tablename, const char *new_tablename, DispatchHandler *handler);
+    int rename_table(const char *old_tablename, const char *new_tablename);
+
     int get_schema(const char *tablename, DispatchHandler *handler);
     int get_schema(const char *tablename, std::string &schema);
 

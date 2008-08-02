@@ -258,6 +258,21 @@ Master::create_table(ResponseCallback *cb, const char *tablename,
     cb->response_ok();
 }
 
+/**
+ *
+ */
+void Master::rename_table(ResponseCallback *cb, const char *old_tablename,
+                          const char *new_tablename) {
+    int error;
+    String errmsg;
+    
+    HT_INFOF("Entering rename_table for %s -> %s", old_tablename, new_tablename);
+    
+    if ((error = rename_table(old_tablename, new_tablename, errmsg)) != Error::OK)
+        cb->error(error, errmsg);
+    else
+        cb->response_ok();
+}
 
 /**
  *
@@ -703,7 +718,14 @@ void Master::drop_table(ResponseCallback *cb, const char *table_name, bool if_ex
 
   }
 
-
+int Master::rename_table(const char *old_tablename, const char *new_tablename,
+                         String &errmsg) {
+  int error = Error::OK;
+  printf("old_tablename: %s\n", old_tablename);
+  printf("new_tablename: %s\n", new_tablename);
+  return error;
+}
+  
 int
 Master::create_table(const char *tablename, const char *schemastr,
                      String &errmsg) {

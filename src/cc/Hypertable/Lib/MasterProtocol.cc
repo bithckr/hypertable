@@ -36,7 +36,14 @@ namespace Hypertable {
     cbuf->append_vstr(schemastr);
     return cbuf;
   }
-
+  CommBuf *MasterProtocol::create_rename_table_request(const char *old_tablename, const char *new_tablename) {
+    HeaderBuilder hbuilder(Header::PROTOCOL_HYPERTABLE_MASTER);
+    CommBuf *cbuf = new CommBuf(hbuilder, 2 + encoded_length_vstr(old_tablename) + encoded_length_vstr(new_tablename));
+    cbuf->append_i16(COMMAND_RENAME_TABLE);
+    cbuf->append_vstr(old_tablename);
+    cbuf->append_vstr(new_tablename);
+    return cbuf;
+  }
   CommBuf *MasterProtocol::create_get_schema_request(const char *tablename) {
     HeaderBuilder hbuilder(Header::PROTOCOL_HYPERTABLE_MASTER);
     CommBuf *cbuf = new CommBuf(hbuilder, 2 + encoded_length_vstr(tablename));
