@@ -43,6 +43,12 @@ export HYPERTABLE_HOME=`pwd`
 popd >& /dev/null
 
 
+$HYPERTABLE_HOME/bin/serverup dfsbroker
+if [ $? != 0 ] ; then
+    echo "ERROR: DfsBroker not running, database not cleaned"
+    exit 1
+fi
+
 #
 # Stop rangeserver
 #
@@ -86,4 +92,46 @@ for pidfile in $HYPERTABLE_HOME/run/DfsBroker.*.pid ; do
 	kill `cat $pidfile`
 	rm $pidfile
     fi
+done
+
+sleep 2
+
+#
+# Wait for Dfs broker to shutdown
+#
+$HYPERTABLE_HOME/bin/serverup dfsbroker
+while [ $? == 0 ] ; do
+    sleep 2
+    echo "Waiting for DFS Broker to shutdown ..."
+    $HYPERTABLE_HOME/bin/serverup dfsbroker
+done
+
+#
+# Wait for RangeServer to shutdown
+#
+$HYPERTABLE_HOME/bin/serverup rangeserver
+while [ $? == 0 ] ; do
+    sleep 2
+    echo "Waiting for RangeServer to shutdown ..."
+    $HYPERTABLE_HOME/bin/serverup rangeserver
+done
+
+#
+# Wait for Master to shutdown
+#
+$HYPERTABLE_HOME/bin/serverup master
+while [ $? == 0 ] ; do
+    sleep 2
+    echo "Waiting for Hypertable.Master to shutdown ..."
+    $HYPERTABLE_HOME/bin/serverup master
+done
+
+#
+# Wait for Hyperspace to shutdown
+#
+$HYPERTABLE_HOME/bin/serverup hyperspace
+while [ $? == 0 ] ; do
+    sleep 2
+    echo "Waiting for Hyperspace to shutdown ..."
+    $HYPERTABLE_HOME/bin/serverup hyperspace
 done

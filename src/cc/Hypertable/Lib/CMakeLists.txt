@@ -41,6 +41,7 @@ Filesystem.cc
 FixedRandomStringGenerator.cc
 HqlCommandInterpreter.cc
 HqlHelpText.cc
+IntervalScanner.cc
 Key.cc
 LoadDataSource.cc
 LocationCache.cc
@@ -65,6 +66,7 @@ RangeServerProtocol.cc
 RangeState.cc
 RootFileHandler.cc
 ScanBlock.cc
+ScanSpec.cc
 Schema.cc
 Table.cc
 TableMutator.cc

@@ -30,6 +30,7 @@
 #include "Cell.h"
 #include "RangeLocator.h"
 #include "RangeServerClient.h"
+#include "IntervalScanner.h"
 #include "ScanBlock.h"
 #include "Schema.h"
 #include "Types.h"
@@ -52,33 +53,14 @@ namespace Hypertable {
      */
     TableScanner(PropertiesPtr &props_ptr, Comm *comm, TableIdentifier *table_identifier, SchemaPtr &schema_ptr, RangeLocatorPtr &range_locator_ptr, ScanSpec &scan_spec, int timeout);
 
-    virtual ~TableScanner();
-
     bool next(Cell &cell);
 
   private:
 
-    void find_range_and_start_scan(const char *row_key, Timer &timer);
-
-    Comm               *m_comm;
-    SchemaPtr           m_schema_ptr;
-    RangeLocatorPtr     m_range_locator_ptr;
-    LocationCachePtr    m_cache_ptr;
-    ScanSpec            m_scan_spec;
-    RangeServerClient   m_range_server;
-    TableIdentifierManaged m_table_identifier;
-    bool                m_started;
-    bool                m_eos;
-    ScanBlock           m_scanblock;
-    std::string         m_cur_row;
-    RangeLocationInfo   m_range_info;
-    struct sockaddr_in  m_cur_addr;
-    bool                m_readahead;
-    bool                m_fetch_outstanding;
-    DispatchHandlerSynchronizer  m_sync_handler;
-    EventPtr            m_event_ptr;
-    uint32_t            m_rows_seen;
-    int                 m_timeout;
+    std::vector<IntervalScannerPtr>  m_interval_scanners;
+    bool      m_eos;
+    size_t    m_scanneri;
+    int32_t   m_rows_seen;
   };
   typedef boost::intrusive_ptr<TableScanner> TableScannerPtr;
 }
