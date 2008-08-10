@@ -724,9 +724,8 @@ void Master::drop_table(ResponseCallback *cb, const char *table_name, bool if_ex
 
 int Master::rename_table(const char *old_tablename, const char *new_tablename,
                          String &errmsg) {
-  int error = Error::OK;
-  printf("old_tablename: %s\n", old_tablename);
-  printf("new_tablename: %s\n", new_tablename);
+  int error = Error::HQL_PARSE_ERROR;
+  errmsg = "Not Implemented";
   return error;
 }
   

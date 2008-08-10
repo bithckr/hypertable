@@ -1279,6 +1279,7 @@ namespace Hypertable {
           Token LIKE         = as_lower_d["like"];
           Token RENAME       = as_lower_d["rename"];
           Token TO           = as_lower_d["to"];
+          Token IN           = as_lower_d["in"];
 
           /**
            * Start grammar definition
@@ -1560,6 +1561,7 @@ namespace Hypertable {
 	    | LT[scan_set_relop(self.state, RELOP_LT)]
 	    | GE[scan_set_relop(self.state, RELOP_GE)]
 	    | GT[scan_set_relop(self.state, RELOP_GT)]
+            | IN[scan_set_relop(self.state, RELOP_EQ)]
 	    ;
 
 	  time_predicate
@@ -1576,6 +1578,21 @@ namespace Hypertable {
 	    = row_interval[scan_add_row_interval(self.state)]
 	    | LPAREN >> row_interval[scan_add_row_interval(self.state)] >>
 	    *( OR >> row_interval[scan_add_row_interval(self.state)]) >> RPAREN
+            | row_list
+            ;
+          
+          row_value
+            = string_literal[scan_set_row(self.state)]
+            ;
+          
+	  list_seperator
+	    = COMMA
+	    ;
+
+          row_list
+            = ROW >> relop >> LPAREN >> row_value[scan_add_row_interval(self.state)] >>
+            *( list_seperator[scan_set_relop(self.state, RELOP_EQ)] >> 
+	    row_value[scan_add_row_interval(self.state)] ) >> RPAREN
             ;
           
 	  cell_spec
@@ -1762,7 +1779,8 @@ namespace Hypertable {
           fetch_scanblock_statement, shutdown_statement, drop_range_statement,
           replay_start_statement, replay_log_statement, replay_commit_statement,
           rename_table_statement, rename_value_list, rename_value,
-          cell_interval, cell_predicate, cell_spec;
+          cell_interval, cell_predicate, cell_spec, row_list, row_value, 
+	  list_seperator;
         };
 
       hql_interpreter_state &state;
